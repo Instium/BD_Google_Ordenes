@@ -156,7 +156,20 @@ with tab2:
 
             no_orden_val = st.text_input("Número de Orden", reg["Numero de Orden"])
             entrega = st.selectbox("Entrega", entrega_opts, index=entrega_opts.index(reg["Entrega"]) if reg["Entrega"] in entrega_opts else 0)
-            status = st.selectbox("Status", status_opts, index=status_opts.index(reg["Status"]) if reg["Status"] in status_opts else 0)
+            status = st.selectbox(
+                "Status",
+                status_opts,
+                index=status_opts.index(reg["Status"]) if reg["Status"] in status_opts else 0
+            )
+
+            # 🧩 Subtipificación automática si el status es "Perdida"
+            subtipificacion = ""
+            if status == "Perdida":
+                subtipificacion = st.selectbox(
+                    "Motivo de pérdida",
+                    ["Paquete Extraviado/Dañado", "Cliente Cancela"]
+                )
+
             fecha_activacion = st.text_input("Fecha de activación", reg["Fecha de activacion"])
             comentarios = st.text_area("Comentarios", reg["Comentarios"])
 
@@ -173,7 +186,7 @@ with tab2:
 
                     nuevos = [
                         fecha, hora, centro, supervisor, agente, dn,
-                        no_orden_val, entrega, status, fecha_activacion, comentarios
+                        no_orden_val, entrega, status, fecha_activacion, comentarios, subtipificacion
                     ]
                     actualizar_orden(st.session_state.edit_no_orden, nuevos)
                     st.toast(f"✅ Orden {st.session_state.edit_no_orden} actualizada correctamente.", icon="🟢")
