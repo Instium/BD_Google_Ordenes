@@ -162,12 +162,14 @@ with tab2:
                 index=status_opts.index(reg["Status"]) if reg["Status"] in status_opts else 0
             )
 
-            # 🧩 Subtipificación automática si el status es "Perdida"
-            subtipificacion = ""
+            # 🧩 Subtipificación visible solo cuando el usuario selecciona "Perdida"
+            subtipificacion = reg.get("Subtipificación", "") if "Subtipificación" in reg else ""
             if status == "Perdida":
                 subtipificacion = st.selectbox(
                     "Motivo de pérdida",
-                    ["Paquete Extraviado/Dañado", "Cliente Cancela"]
+                    ["Paquete Extraviado/Dañado", "Cliente Cancela"],
+                    index=["Paquete Extraviado/Dañado", "Cliente Cancela"].index(subtipificacion)
+                    if subtipificacion in ["Paquete Extraviado/Dañado", "Cliente Cancela"] else 0
                 )
 
             fecha_activacion = st.text_input("Fecha de activación", reg["Fecha de activacion"])
