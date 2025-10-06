@@ -8,8 +8,8 @@ def get_sheet():
         "https://www.googleapis.com/auth/drive"
     ]
 
-    # ✅ Streamlit ya devuelve el JSON como diccionario, no lo vuelvas a cargar
-    creds_dict = st.secrets["google"]["service_account"]
+    # ✅ En Streamlit, el JSON ya viene como diccionario dentro de los secrets
+    creds_dict = dict(st.secrets["google"]["service_account"])
 
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
