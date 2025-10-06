@@ -9,12 +9,17 @@ def get_sheet():
         "https://www.googleapis.com/auth/drive"
     ]
 
-    # 🔐 Cargar credenciales desde los Secrets de Streamlit Cloud
-    creds_json = os.getenv("google_service_account") or os.getenv("google.service_account")
-    creds_dict = json.loads(creds_json)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    creds_env = os.getenv("google_service_account") or os.getenv("google.service_account")
 
-    # 🔗 Conexión con tu Google Sheet
+    # 🔧 Manejar caso según tipo (str o dict)
+    if isinstance(creds_env, str):
+        creds_dict = json.loads(creds_env)
+    elif isinstance(creds_env, dict):
+        creds_dict = creds_env
+    else:
+        raise ValueError("No se encontraron credenciales válidas en los Secrets de Streamlit")
+
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
-    sheet = client.open("Ordenes_BackOffice").sheet1  # 👈 usa el nombre exacto de tu hoja
+    sheet = client.open("Ordenes_BackOffice").sheet1
     return sheet
