@@ -68,7 +68,8 @@ with tab1:
 
         numero_orden = st.text_input("Número de Orden")
         entrega = st.selectbox("Entrega", ["", "DHL", "Tienda", "Domicilio"])
-        status = st.selectbox("Status", ["", "Activada", "Perdida", "En tránsito"])
+        status = "En tránsito"
+        st.text_input("Status", status, disabled=True)
         fecha_activacion = st.text_input("Fecha de activación (vacío si nueva)")
         comentarios = st.text_area("Comentarios")
 
