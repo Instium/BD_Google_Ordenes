@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import pytz
-from BD_GOOGLE.crud import crear_orden, leer_orden, actualizar_orden, eliminar_orden
-from BD_GOOGLE.google_service import get_sheet
+from crud import crear_orden, leer_orden, actualizar_orden, eliminar_orden
+from google_service import get_sheet
+
 # === CONFIGURACIÓN GENERAL ===
 st.set_page_config(page_title="Gestión de Órdenes", layout="wide")
 st.title("📋 Gestor de Órdenes - CRUD")
