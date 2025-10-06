@@ -174,6 +174,8 @@ with tab2:
                 )
 
             # --- Ahora sí, el resto dentro del form ---
+            entrega_opts = ["DHL", "Tienda", "Domicilio"]
+            entrega_idx = entrega_opts.index(reg["Entrega"]) if reg["Entrega"] in entrega_opts else 0
             with st.form("form_update", clear_on_submit=False):
                 fecha = st.text_input("Fecha", reg["Fecha"])
                 hora = st.text_input("Hora", reg["Hora"])
