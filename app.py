@@ -166,6 +166,11 @@ with tab2:
                 elif not dn.isdigit() or len(dn) != 10:
                     st.toast("❌ DN inválido. Debe tener exactamente 10 dígitos numéricos.", icon="⚠️")
                 else:
+                    # 🕓 Si el status cambia a "Activada", registrar fecha/hora actual (MX)
+                    mx_timezone = pytz.timezone("America/Mexico_City")
+                    if status == "Activada" and reg["Status"] != "Activada":
+                        fecha_activacion = datetime.now(mx_timezone).strftime("%Y-%m-%d %H:%M")
+
                     nuevos = [
                         fecha, hora, centro, supervisor, agente, dn,
                         no_orden_val, entrega, status, fecha_activacion, comentarios
@@ -175,6 +180,7 @@ with tab2:
                     st.session_state.edit_reg = None
                     st.session_state.edit_no_orden = None
                     st.rerun()
+
 
 
 # =====================================================
