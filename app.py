@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import pytz
 from crud import crear_orden, leer_orden, actualizar_orden, eliminar_orden
 from google_service import get_sheet
 
@@ -33,7 +34,7 @@ tab1, tab2, tab3 = st.tabs(["➕ Crear", "✏️ Actualizar", "🗑️ Eliminar"
 with tab1:
     st.subheader("➕ Crear nueva orden")
 
-    # === Selección de agente (fuera del form para actualizar en vivo) ===
+    # === Selección de agente ===
     if st.session_state.df_agentes is not None:
         agente = st.selectbox("Agente", [""] + sorted(st.session_state.df_agentes["Nombre Completo"].unique()))
         supervisor, centro = "", ""
@@ -47,8 +48,10 @@ with tab1:
 
     # === Formulario principal ===
     with st.form("form_crear"):
-        fecha = datetime.now().strftime("%Y-%m-%d")
-        hora = datetime.now().strftime("%H:%M")
+        # 🕓 Ajuste de hora local (CDMX)
+        mx_timezone = pytz.timezone("America/Mexico_City")
+        fecha = datetime.now(mx_timezone).strftime("%Y-%m-%d")
+        hora = datetime.now(mx_timezone).strftime("%H:%M")
 
         # Campos autocompletados
         st.text_input("Supervisor", supervisor, disabled=True)
@@ -98,7 +101,7 @@ with tab2:
         status_opts = ["Activada", "Perdida", "En tránsito"]
         status_idx = status_opts.index(reg["Status"]) if reg["Status"] in status_opts else 0
 
-        # === Agente y autocompletado (fuera del form para actualizar en vivo) ===
+        # === Agente y autocompletado ===
         if st.session_state.df_agentes is not None:
             agente = st.selectbox(
                 "Agente",
@@ -164,4 +167,3 @@ with st.spinner("📦 Cargando órdenes desde Google Sheets..."):
 
 st.success(f"✅ {len(registros)} órdenes cargadas correctamente")
 st.dataframe(registros)
-
