@@ -1,0 +1,27 @@
+# === Entornos virtuales ===
+venv/
+env/
+Google1/
+.venv/
+*.pyenv
+__pycache__/
+*.pyc
+
+# === Archivos sensibles ===
+creds/
+*.json
+*.key
+*.pem
+
+# === Archivos del sistema ===
+.DS_Store
+Thumbs.db
+
+# === Archivos temporales ===
+*.log
+*.tmp
+*.bak
+
+# === Configuración local ===
+.vscode/
+.idea/
