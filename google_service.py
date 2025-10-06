@@ -1,5 +1,3 @@
-import os
-import json
 import gspread
 import streamlit as st
 from oauth2client.service_account import ServiceAccountCredentials
@@ -10,21 +8,15 @@ def get_sheet():
         "https://www.googleapis.com/auth/drive"
     ]
 
-    creds_data = st.secrets["google"]["service_account"]
+    # ✅ Lee directamente los valores de la sección [google] del secrets.toml
+    creds_dict = dict(st.secrets["google"])
 
-    # 🧠 Si es texto plano con saltos reales, no lo conviertas con json.loads
-    if isinstance(creds_data, str) and creds_data.strip().startswith("{"):
-        try:
-            creds_dict = json.loads(creds_data)
-        except Exception:
-            # Si ya no es JSON sino un dict directo
-            creds_dict = st.secrets["google"]["service_account"]
-    else:
-        creds_dict = creds_data
-
+    # 🔑 Autoriza con las credenciales
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
+
+    # 📄 Abre la hoja
     sheet = client.open("Ordenes_BackOffice").sheet1
 
-    st.success("✅ Conectado correctamente a Google Sheets")
+    st.toast("✅ Conectado correctamente a Google Sheets", icon="🟢")
     return sheet
