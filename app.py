@@ -158,5 +158,10 @@ with tab3:
 
 # ============ Tabla final ============
 st.subheader("📑 Todas las órdenes en Google Sheet")
-registros = get_sheet().get_all_records()
+
+with st.spinner("📦 Cargando órdenes desde Google Sheets..."):
+    registros = get_sheet().get_all_records()
+
+st.success(f"✅ {len(registros)} órdenes cargadas correctamente")
 st.dataframe(registros)
+
