@@ -70,6 +70,7 @@ with tab1:
         entrega = st.selectbox("Entrega", ["", "DHL", "Tienda", "Domicilio"])
         status = "En tránsito"
         st.text_input("Status", status, disabled=True)
+        fecha_tentativa = st.date_input("📅 Fecha Tentativa", value=None)
         fecha_activacion = st.text_input("Fecha de activación (vacío si nueva)")
         comentarios = st.text_area("Comentarios")
 
@@ -88,9 +89,10 @@ with tab1:
 
                 dups_dn = any(str(r["DN"]).strip().lower() == dn_clean for r in registros)
                 dups_no = any(
-                str(r.get("Número de Orden", r.get("Numero de Orden", ""))).strip().lower() == no_clean
-                for r in registros
+                    str(r.get("Número de Orden", r.get("Numero de Orden", ""))).strip().lower() == no_clean
+                    for r in registros
                 )
+
                 if dups_dn:
                     st.toast(f"❌ Ya existe una orden con el DN: {dn}", icon="⚠️")
                 elif dups_no:
@@ -98,7 +100,7 @@ with tab1:
                 else:
                     crear_orden([
                         fecha, hora, centro, supervisor, agente, dn,
-                        numero_orden, entrega, status, fecha_activacion, comentarios
+                        numero_orden, entrega, status, fecha_activacion, comentarios, str(fecha_tentativa)
                     ])
                     st.toast("✅ Orden agregada correctamente.", icon="🎉")
 
@@ -143,7 +145,24 @@ with tab2:
             agente = st.text_input("Agente", reg["Agente"])
             supervisor, centro = reg["Supervisor"], reg["Centro"]
 
-        # --- Formulario de actualización ---
+        # --- Status fuera del form (para que reaccione en vivo) ---
+        status = st.selectbox(
+            "Status",
+            status_opts,
+            index=status_opts.index(reg["Status"]) if reg["Status"] in status_opts else 0
+        )
+
+        # 🧩 Subtipificación visible solo cuando se selecciona "Perdida"
+        subtipificacion = reg.get("Subtipificación", "") if "Subtipificación" in reg else ""
+        if status == "Perdida":
+            subtipificacion = st.selectbox(
+                "Motivo de pérdida",
+                ["Paquete Extraviado/Dañado", "Cliente Cancela"],
+                index=["Paquete Extraviado/Dañado", "Cliente Cancela"].index(subtipificacion)
+                if subtipificacion in ["Paquete Extraviado/Dañado", "Cliente Cancela"] else 0
+            )
+
+        # --- Formulario principal ---
         with st.form("form_update", clear_on_submit=False):
             fecha = st.text_input("Fecha", reg["Fecha"])
             hora = st.text_input("Hora", reg["Hora"])
@@ -156,59 +175,31 @@ with tab2:
 
             no_orden_val = st.text_input("Número de Orden", reg["Numero de Orden"])
             entrega = st.selectbox("Entrega", entrega_opts, index=entrega_opts.index(reg["Entrega"]) if reg["Entrega"] in entrega_opts else 0)
-            # --- Status y subtipificación fuera del form (para que sean reactivos) ---
-            status = st.selectbox(
-                "Status",
-                status_opts,
-                index=status_opts.index(reg["Status"]) if reg["Status"] in status_opts else 0
-            )
+            fecha_tentativa = st.date_input("📅 Fecha Tentativa", value=None)
+            fecha_activacion = st.text_input("Fecha de activación", reg["Fecha de activacion"])
+            comentarios = st.text_area("Comentarios", reg["Comentarios"])
 
-            # 🧩 Mostrar subtipificación en tiempo real cuando selecciona "Perdida"
-            subtipificacion = reg.get("Subtipificación", "") if "Subtipificación" in reg else ""
-            if status == "Perdida":
-                subtipificacion = st.selectbox(
-                    "Motivo de pérdida",
-                    ["Paquete Extraviado/Dañado", "Cliente Cancela"],
-                    index=["Paquete Extraviado/Dañado", "Cliente Cancela"].index(subtipificacion)
-                    if subtipificacion in ["Paquete Extraviado/Dañado", "Cliente Cancela"] else 0
-                )
+            if st.form_submit_button("✏️ Guardar cambios"):
+                if not agente or not no_orden_val or not entrega or not status:
+                    st.toast("❌ Faltan campos obligatorios: Agente, Número de Orden, Entrega o Status.", icon="⚠️")
+                elif not dn.isdigit() or len(dn) != 10:
+                    st.toast("❌ DN inválido. Debe tener exactamente 10 dígitos numéricos.", icon="⚠️")
+                else:
+                    # 🕓 Si el status cambia a "Activada", registrar fecha/hora actual (MX)
+                    mx_timezone = pytz.timezone("America/Mexico_City")
+                    if status == "Activada" and reg["Status"] != "Activada":
+                        fecha_activacion = datetime.now(mx_timezone).strftime("%Y-%m-%d %H:%M")
 
-            # --- Ahora sí, el resto dentro del form ---
-            entrega_opts = ["DHL", "Tienda", "Domicilio"]
-            entrega_idx = entrega_opts.index(reg["Entrega"]) if reg["Entrega"] in entrega_opts else 0
-            with st.form("form_update", clear_on_submit=False):
-                fecha = st.text_input("Fecha", reg["Fecha"])
-                hora = st.text_input("Hora", reg["Hora"])
-                st.text_input("Centro", centro, disabled=True)
-                st.text_input("Supervisor", supervisor, disabled=True)
-
-                dn = st.text_input("DN", str(reg["DN"]))
-                no_orden_val = st.text_input("Número de Orden", reg["Numero de Orden"])
-                entrega = st.selectbox("Entrega", entrega_opts, index=entrega_idx)
-                fecha_activacion = st.text_input("Fecha de activación", reg["Fecha de activacion"])
-                comentarios = st.text_area("Comentarios", reg["Comentarios"])
-
-                if st.form_submit_button("✏️ Guardar cambios"):
-                    if not agente or not no_orden_val or not entrega or not status:
-                        st.toast("❌ Faltan campos obligatorios: Agente, Número de Orden, Entrega o Status.", icon="⚠️")
-                    elif not dn.isdigit() or len(dn) != 10:
-                        st.toast("❌ DN inválido. Debe tener exactamente 10 dígitos numéricos.", icon="⚠️")
-                    else:
-                        # 🕓 Si el status cambia a "Activada", registrar fecha/hora actual (MX)
-                        mx_timezone = pytz.timezone("America/Mexico_City")
-                        if status == "Activada" and reg["Status"] != "Activada":
-                            fecha_activacion = datetime.now(mx_timezone).strftime("%Y-%m-%d %H:%M")
-
-                        nuevos = [
-                            fecha, hora, centro, supervisor, agente, dn,
-                            no_orden_val, entrega, status, fecha_activacion, comentarios, subtipificacion
-                        ]
-                        actualizar_orden(st.session_state.edit_no_orden, nuevos)
-                        st.toast(f"✅ Orden {st.session_state.edit_no_orden} actualizada correctamente.", icon="🟢")
-                        st.session_state.edit_reg = None
-                        st.session_state.edit_no_orden = None
-                        st.rerun()
-
+                    nuevos = [
+                        fecha, hora, centro, supervisor, agente, dn,
+                        no_orden_val, entrega, status, fecha_activacion, comentarios,
+                        subtipificacion, str(fecha_tentativa)
+                    ]
+                    actualizar_orden(st.session_state.edit_no_orden, nuevos)
+                    st.toast(f"✅ Orden {st.session_state.edit_no_orden} actualizada correctamente.", icon="🟢")
+                    st.session_state.edit_reg = None
+                    st.session_state.edit_no_orden = None
+                    st.rerun()
 
 
 # =====================================================
