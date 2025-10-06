@@ -86,8 +86,10 @@ with tab1:
                 no_clean = numero_orden.strip().lower()
 
                 dups_dn = any(str(r["DN"]).strip().lower() == dn_clean for r in registros)
-                dups_no = any(str(r["Número de Orden"]).strip().lower() == no_clean for r in registros)
-
+                dups_no = any(
+                str(r.get("Número de Orden", r.get("Numero de Orden", ""))).strip().lower() == no_clean
+                for r in registros
+                )
                 if dups_dn:
                     st.toast(f"❌ Ya existe una orden con el DN: {dn}", icon="⚠️")
                 elif dups_no:
