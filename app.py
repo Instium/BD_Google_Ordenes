@@ -29,6 +29,9 @@ if archivo:
 else:
     st.sidebar.info("Sube la base de agentes para habilitar autocompletado.")
 
+# === Lista de regiones ===
+regiones = ["México", "Puebla", "Veracruz", "Tijuana", "Guadalajara", "Monterrey"]
+
 # === TABS PRINCIPALES ===
 tab1, tab2, tab3 = st.tabs(["➕ Crear", "✏️ Actualizar", "🗑️ Eliminar"])
 
@@ -61,6 +64,7 @@ with tab1:
         st.text_input("Supervisor", supervisor, disabled=True)
         st.text_input("Centro", centro, disabled=True)
 
+        region = st.selectbox("🌎 Región", [""] + regiones)
         dn = st.text_input("DN")
         if dn and (not dn.isdigit() or len(dn) != 10):
             st.warning("⚠️ El DN debe tener exactamente 10 dígitos numéricos.")
@@ -74,8 +78,8 @@ with tab1:
         comentarios = st.text_area("Comentarios")
 
         if st.form_submit_button("✅ Crear orden"):
-            if not agente or not numero_orden or not entrega:
-                st.toast("❌ Faltan campos obligatorios: Agente, Número de Orden o Entrega.", icon="⚠️")
+            if not agente or not numero_orden or not entrega or not region:
+                st.toast("❌ Faltan campos obligatorios: Agente, Región, Número de Orden o Entrega.", icon="⚠️")
             elif not dn.isdigit() or len(dn) != 10:
                 st.toast("❌ DN inválido. Debe tener exactamente 10 dígitos numéricos.", icon="⚠️")
             else:
@@ -98,8 +102,8 @@ with tab1:
                 else:
                     crear_orden([
                         fecha, hora, centro, supervisor, agente, dn,
-                        numero_orden, entrega, status,
-                        fecha_activacion, comentarios, "", str(fecha_tentativa)
+                        numero_orden, entrega, status, fecha_activacion,
+                        comentarios, "", str(fecha_tentativa), region
                     ])
                     st.toast("✅ Orden agregada correctamente.", icon="🎉")
 
@@ -168,6 +172,7 @@ with tab2:
             st.text_input("Centro", centro, disabled=True)
             st.text_input("Supervisor", supervisor, disabled=True)
 
+            region = st.selectbox("🌎 Región", regiones, index=regiones.index(reg.get("Region", "México")) if reg.get("Region") in regiones else 0)
             dn = st.text_input("DN", str(reg["DN"]))
             if dn and (not dn.isdigit() or len(dn) != 10):
                 st.warning("⚠️ El DN debe tener exactamente 10 dígitos numéricos.")
@@ -182,7 +187,7 @@ with tab2:
             comentarios = st.text_area("Comentarios", reg["Comentarios"])
 
             if st.form_submit_button("✏️ Guardar cambios"):
-                if not agente or not no_orden_val or not entrega or not status:
+                if not agente or not no_orden_val or not entrega or not status or not region:
                     st.toast("❌ Faltan campos obligatorios.", icon="⚠️")
                 elif not dn.isdigit() or len(dn) != 10:
                     st.toast("❌ DN inválido.", icon="⚠️")
@@ -194,14 +199,13 @@ with tab2:
                     nuevos = [
                         fecha, hora, centro, supervisor, agente, dn,
                         no_orden_val, entrega, status, fecha_activacion,
-                        comentarios, subtipificacion, str(fecha_tentativa)
+                        comentarios, subtipificacion, str(fecha_tentativa), region
                     ]
                     actualizar_orden(st.session_state.edit_no_orden, nuevos)
                     st.toast(f"✅ Orden {st.session_state.edit_no_orden} actualizada correctamente.", icon="🟢")
                     st.session_state.edit_reg = None
                     st.session_state.edit_no_orden = None
                     st.rerun()
-
 
 # =====================================================
 # 🔴 TAB 3 - ELIMINAR ORDEN
