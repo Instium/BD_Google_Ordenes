@@ -225,5 +225,22 @@ st.subheader("📑 Todas las órdenes en Google Sheet")
 with st.spinner("📦 Cargando órdenes desde Google Sheets..."):
     registros = get_sheet().get_all_records()
 
-st.success(f"✅ {len(registros)} órdenes cargadas correctamente")
-st.dataframe(registros)
+# 🧩 Crear DataFrame y forzar tipos seguros para visualización
+df = pd.DataFrame(registros)
+
+# 🔹 Forzar texto en columnas mixtas (letras + números)
+for col in ["Numero de Orden", "Comentarios"]:
+    if col in df.columns:
+        df[col] = df[col].astype(str)
+
+# 🔹 Limpiar columna de fecha tentativa (None → vacío)
+if "Fecha Tentativa" in df.columns:
+    df["Fecha Tentativa"] = df["Fecha Tentativa"].replace("None", "").fillna("")
+
+# 🔹 Mostrar fecha y hora actual como indicador de última actualización
+mx_timezone = pytz.timezone("America/Mexico_City")
+last_refresh = datetime.now(mx_timezone).strftime("%Y-%m-%d %H:%M")
+
+st.success(f"✅ {len(df)} órdenes cargadas correctamente — Última actualización: {last_refresh}")
+st.dataframe(df)
+
