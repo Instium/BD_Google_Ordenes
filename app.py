@@ -139,7 +139,7 @@ with tab2:
             st.session_state.edit_no_orden = reg["Numero de Orden"]
             st.toast("✅ Orden cargada. Edita abajo y guarda cambios.", icon="🟢")
         else:
-            st.toast("⚠️ Orden no encontrada.", icon="⚠️")
+            st.toast("⚠️ Orden no encontrado.", icon="⚠️")
 
     if st.session_state.edit_reg:
         reg = st.session_state.edit_reg
