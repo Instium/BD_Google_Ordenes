@@ -210,14 +210,24 @@ with tab2:
                     st.toast("❌ DN inválido.", icon="⚠️")
                 else:
                     mx_timezone = pytz.timezone("America/Mexico_City")
+
+                    # 📅 Si se activó, guardamos fecha de activación
                     if status == "Activada" and reg["Status"] != "Activada":
                         fecha_activacion = datetime.now(mx_timezone).strftime("%Y-%m-%d %H:%M")
 
+                    # 📅 Si se marcó como PERDIDA por primera vez, guardamos fecha cancelada
+                    fecha_cancelada = reg.get("Fecha Cancelada", "")
+                    if status == "Perdida" and reg["Status"] != "Perdida":
+                        fecha_cancelada = datetime.now(mx_timezone).strftime("%Y-%m-%d %H:%M")
+
+                    # 🧩 Nuevo orden de columnas (agregamos Fecha Cancelada al final)
                     nuevos = [
                         fecha, hora, centro, supervisor, agente, dn,
                         no_orden_val, entrega, status, fecha_activacion,
-                        comentarios, subtipificacion, str(fecha_tentativa), region
+                        comentarios, subtipificacion, str(fecha_tentativa),
+                        region, fecha_cancelada
                     ]
+
                     actualizar_orden(st.session_state.edit_no_orden, nuevos)
                     st.toast(f"✅ Orden {st.session_state.edit_no_orden} actualizada correctamente.", icon="🟢")
                     st.session_state.edit_reg = None

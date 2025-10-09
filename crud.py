@@ -25,7 +25,7 @@ def actualizar_orden(no_orden, nuevos_datos):
         print("⚠️ Orden no encontrada:", no_orden)
         return
     fila = celdas[0].row
-    hoja.update([nuevos_datos], f"A{fila}:N{fila}")  # 👈 Ajusta rango a tus columnas
+    hoja.update([nuevos_datos], f"A{fila}:O{fila}")  # 👈 Ajusta rango a tus columnas
     print(f"✏️ Orden {no_orden} actualizada:", nuevos_datos)
 
 # DELETE
