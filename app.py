@@ -77,7 +77,15 @@ with tab1:
         fecha_activacion = st.text_input("Fecha de activación (vacío si nueva)")
         comentarios = st.text_area("Comentarios")
 
-        if st.form_submit_button("✅ Crear orden"):
+        # === 🟢 Botones lado a lado ===
+        col1, col2 = st.columns(2)
+        with col1:
+            crear_btn = st.form_submit_button("✅ Crear orden")
+        with col2:
+            limpiar_btn = st.form_submit_button("🧹 Limpiar formulario")
+
+        # === 🟢 Lógica de creación ===
+        if crear_btn:
             if not agente or not numero_orden or not entrega or not region:
                 st.toast("❌ Faltan campos obligatorios: Agente, Región, Número de Orden o Entrega.", icon="⚠️")
             elif not dn.isdigit() or len(dn) != 10:
@@ -106,14 +114,14 @@ with tab1:
                         comentarios, "", str(fecha_tentativa), region
                     ])
                     st.toast("✅ Orden agregada correctamente.", icon="🎉")
-
-                    # 🧹 Limpiar todos los valores del formulario excepto la base cargada
-                    for key in list(st.session_state.keys()):
-                        if key not in ["df_agentes"]:
-                            del st.session_state[key]
-
                     st.rerun()
 
+        # === 🧹 Lógica del botón de limpieza ===
+        if limpiar_btn:
+            for key in list(st.session_state.keys()):
+                if key not in ["df_agentes"]:
+                    del st.session_state[key]
+            st.rerun()
 # =====================================================
 # 🟡 TAB 2 - ACTUALIZAR ORDEN EXISTENTE
 # =====================================================
