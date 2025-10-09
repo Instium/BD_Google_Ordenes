@@ -56,6 +56,7 @@ with tab1:
         supervisor, centro = "", ""
 
     # --- Formulario de nueva orden ---
+    # === Formulario principal ===
     with st.form("form_crear"):
         mx_timezone = pytz.timezone("America/Mexico_City")
         fecha = datetime.now(mx_timezone).strftime("%Y-%m-%d")
@@ -77,51 +78,47 @@ with tab1:
         fecha_activacion = st.text_input("Fecha de activación (vacío si nueva)")
         comentarios = st.text_area("Comentarios")
 
-        # === 🟢 Botones lado a lado ===
-        col1, col2 = st.columns(2)
-        with col1:
-            crear_btn = st.form_submit_button("✅ Crear orden")
-        with col2:
-            limpiar_btn = st.form_submit_button("🧹 Limpiar formulario")
+        submitted = st.form_submit_button("✅ Crear orden")
 
-        # === 🟢 Lógica de creación ===
-        if crear_btn:
-            if not agente or not numero_orden or not entrega or not region:
-                st.toast("❌ Faltan campos obligatorios: Agente, Región, Número de Orden o Entrega.", icon="⚠️")
-            elif not dn.isdigit() or len(dn) != 10:
-                st.toast("❌ DN inválido. Debe tener exactamente 10 dígitos numéricos.", icon="⚠️")
+    # === Lógica de creación ===
+    if submitted:
+        if not agente or not numero_orden or not entrega or not region:
+            st.toast("❌ Faltan campos obligatorios: Agente, Región, Número de Orden o Entrega.", icon="⚠️")
+        elif not dn.isdigit() or len(dn) != 10:
+            st.toast("❌ DN inválido. Debe tener exactamente 10 dígitos numéricos.", icon="⚠️")
+        else:
+            sheet = get_sheet()
+            registros = sheet.get_all_records()
+
+            dn_clean = dn.strip().lower()
+            no_clean = numero_orden.strip().lower()
+
+            dups_dn = any(str(r["DN"]).strip().lower() == dn_clean for r in registros)
+            dups_no = any(
+                str(r.get("Número de Orden", r.get("Numero de Orden", ""))).strip().lower() == no_clean
+                for r in registros
+            )
+
+            if dups_dn:
+                st.toast(f"❌ Ya existe una orden con el DN: {dn}", icon="⚠️")
+            elif dups_no:
+                st.toast(f"❌ Ya existe una orden con el Número de Orden: {numero_orden}", icon="⚠️")
             else:
-                sheet = get_sheet()
-                registros = sheet.get_all_records()
+                crear_orden([
+                    fecha, hora, centro, supervisor, agente, dn,
+                    numero_orden, entrega, status, fecha_activacion,
+                    comentarios, "", str(fecha_tentativa), region
+                ])
+                st.toast("✅ Orden agregada correctamente.", icon="🎉")
+                st.rerun()
 
-                dn_clean = dn.strip().lower()
-                no_clean = numero_orden.strip().lower()
+    # === 🧹 Botón limpiar FUERA del form ===
+    if st.button("🧹 Limpiar formulario"):
+        for key in list(st.session_state.keys()):
+            if key not in ["df_agentes"]:
+                del st.session_state[key]
+        st.rerun()
 
-                dups_dn = any(str(r["DN"]).strip().lower() == dn_clean for r in registros)
-                dups_no = any(
-                    str(r.get("Número de Orden", r.get("Numero de Orden", ""))).strip().lower() == no_clean
-                    for r in registros
-                )
-
-                if dups_dn:
-                    st.toast(f"❌ Ya existe una orden con el DN: {dn}", icon="⚠️")
-                elif dups_no:
-                    st.toast(f"❌ Ya existe una orden con el Número de Orden: {numero_orden}", icon="⚠️")
-                else:
-                    crear_orden([
-                        fecha, hora, centro, supervisor, agente, dn,
-                        numero_orden, entrega, status, fecha_activacion,
-                        comentarios, "", str(fecha_tentativa), region
-                    ])
-                    st.toast("✅ Orden agregada correctamente.", icon="🎉")
-                    st.rerun()
-
-        # === 🧹 Lógica del botón de limpieza ===
-        if limpiar_btn:
-            for key in list(st.session_state.keys()):
-                if key not in ["df_agentes"]:
-                    del st.session_state[key]
-            st.rerun()
 # =====================================================
 # 🟡 TAB 2 - ACTUALIZAR ORDEN EXISTENTE
 # =====================================================
