@@ -106,8 +106,11 @@ with tab1:
                         comentarios, "", str(fecha_tentativa), region
                     ])
                     st.toast("✅ Orden agregada correctamente.", icon="🎉")
-
-
+                    # 🔄 Limpiar formulario
+                    st.session_state["edit_reg"] = None
+                    st.session_state["edit_no_orden"] = None
+                    st.session_state["form_crear_submitted"] = True
+                    st.experimental_rerun()
 # =====================================================
 # 🟡 TAB 2 - ACTUALIZAR ORDEN EXISTENTE
 # =====================================================
