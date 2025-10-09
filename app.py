@@ -56,8 +56,11 @@ with tab1:
         supervisor, centro = "", ""
 
     # --- Formulario de nueva orden ---
-    # === Formulario principal ===
-    with st.form("form_crear"):
+# 🪄 Si se presionó limpiar, cambiamos el ID del form para resetearlo
+    if "form_id" not in st.session_state:
+        st.session_state.form_id = 1
+
+    with st.form(f"form_crear_{st.session_state.form_id}"):
         mx_timezone = pytz.timezone("America/Mexico_City")
         fecha = datetime.now(mx_timezone).strftime("%Y-%m-%d")
         hora = datetime.now(mx_timezone).strftime("%H:%M")
@@ -78,10 +81,14 @@ with tab1:
         fecha_activacion = st.text_input("Fecha de activación (vacío si nueva)")
         comentarios = st.text_area("Comentarios")
 
-        submitted = st.form_submit_button("✅ Crear orden")
+        col1, col2 = st.columns(2)
+        with col1:
+            crear_btn = st.form_submit_button("✅ Crear orden")
+        with col2:
+            limpiar_btn = st.form_submit_button("🧹 Limpiar formulario")
 
-    # === Lógica de creación ===
-    if submitted:
+    # === Lógica Crear ===
+    if crear_btn:
         if not agente or not numero_orden or not entrega or not region:
             st.toast("❌ Faltan campos obligatorios: Agente, Región, Número de Orden o Entrega.", icon="⚠️")
         elif not dn.isdigit() or len(dn) != 10:
@@ -112,12 +119,11 @@ with tab1:
                 st.toast("✅ Orden agregada correctamente.", icon="🎉")
                 st.rerun()
 
-    # === 🧹 Botón limpiar FUERA del form ===
-    if st.button("🧹 Limpiar formulario"):
-        for key in list(st.session_state.keys()):
-            if key not in ["df_agentes"]:
-                del st.session_state[key]
+    # === Lógica Limpiar ===
+    if limpiar_btn:
+        st.session_state.form_id += 1  # 🔁 Fuerza a Streamlit a recrear el form vacío
         st.rerun()
+
 
 # =====================================================
 # 🟡 TAB 2 - ACTUALIZAR ORDEN EXISTENTE
