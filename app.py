@@ -106,11 +106,14 @@ with tab1:
                         comentarios, "", str(fecha_tentativa), region
                     ])
                     st.toast("✅ Orden agregada correctamente.", icon="🎉")
-                    # 🔄 Limpiar formulario
-                    st.session_state["edit_reg"] = None
-                    st.session_state["edit_no_orden"] = None
-                    st.session_state["form_crear_submitted"] = True
+
+                    # 🧹 Limpiar todos los valores del formulario excepto la base cargada
+                    for key in list(st.session_state.keys()):
+                        if key not in ["df_agentes"]:
+                            del st.session_state[key]
+
                     st.rerun()
+
 # =====================================================
 # 🟡 TAB 2 - ACTUALIZAR ORDEN EXISTENTE
 # =====================================================
